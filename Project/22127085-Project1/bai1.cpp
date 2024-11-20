@@ -16,11 +16,12 @@ Chuyen chuoi Hex sang chuoi Binary
 Input:	1 string ( chuoi Hex ) ( strHex ).
 Output: 1 vector ( chuoi Binary ).
 */
-vector<int> convertHexToBinary(string strHex)
+vector<int> convertHexToBinary(string& strHex)
 {
-    vector<int> arrBit;
+    vector<int> arrBit = {};
     for (int i = 0; i < strHex.length(); i++)
-    {
+    {   
+        cout << i << ":" << endl;
         switch (strHex[i])
         {
         case '0':
@@ -151,11 +152,22 @@ vector<int> convertHexToBinary(string strHex)
             arrBit.push_back(0);
             break;
         }
+        default: throw "Invalid hex string";
         }
+        for (int i = 0; i < arrBit.size(); i++)
+        {
+            cout << arrBit[i];
+        }
+        cout << endl;
     }
+    cout << "End" << endl;
     while (arrBit.size()>1 && arrBit[0]==0)
     {
         arrBit.erase(arrBit.begin());
+        for (int i = 0; i < arrBit.size(); i++)
+        {
+            cout << arrBit[i];
+        }
     }
     return arrBit;
 }
@@ -176,9 +188,48 @@ vector<int> addTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
         int bitA = (i >= 0) ? a[i--] : 0; // Lấy bit của a, nếu hết thì bằng 0
         int bitB = (j >= 0) ? b[j--] : 0; // Lấy bit của b, nếu hết thì bằng 0
         int sum = bitA + bitB + carry;    // Tính tổng 2 bit và carry
-        cout << bitA << " " << bitB << " " << carry << " " << sum%2 << endl;
         result[k--] = sum % 2;            // Lấy bit kết quả
         carry = sum / 2;                  // Tính carry mới
+    }
+
+    // Loại bỏ các bit 0 thừa phía trước nếu cần
+    while (result.size() > 1 && result[0] == 0)
+    {
+        result.erase(result.begin());
+    }
+    return result;
+}
+
+// Hàm trừ hai số nhị phân (a >= b)
+vector<int> subTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
+{
+    vector<int> result(a.size(), 0); // Kết quả có cùng kích thước với `a`
+    int borrow = 0;
+
+    int i = a.size() - 1; // Con trỏ bit cuối của `a`
+    int j = b.size() - 1; // Con trỏ bit cuối của `b`
+
+    // Thực hiện trừ từng bit
+    while (i >= 0)
+    {
+        int bitA = a[i];                // Bit từ `a`
+        int bitB = (j >= 0) ? b[j] : 0; // Bit từ `b` (nếu vượt ngoài chỉ số thì xem như 0)
+
+        // Tính bit kết quả và cập nhật borrow
+        int diff = bitA - bitB - borrow;
+        if (diff < 0)
+        {
+            diff += 2;  // Mượn từ bit cao hơn
+            borrow = 1; // Đánh dấu mượn
+        }
+        else
+        {
+            borrow = 0;
+        }
+
+        result[i] = diff; // Lưu bit kết quả
+        i--;
+        j--;
     }
 
     // Loại bỏ các bit 0 thừa phía trước nếu cần
@@ -190,31 +241,8 @@ vector<int> addTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
     return result;
 }
 
-// Hàm trừ hai số nhị phân
-vector<int> subTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
-{
-    vector<int> result = a;
-    vector<int> borrow(b.size(), 0);
-    for (size_t i = 0; i < b.size(); ++i)
-    {
-        if (result[i] < b[i])
-        {
-            result[i] += 2 - b[i];
-            result[i + 1] -= 1; // Borrow
-        }
-        else
-        {
-            result[i] -= b[i];
-        }
-    }
-    while (!result.empty() && result.back() == 0)
-    {
-        result.pop_back();
-    }
-    return result;
-}
-
 // So sánh hai số nhị phân
+// Trả về 1 nếu a > b, -1 nếu a < b, 0 nếu a = b
 int compareTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
 {
     if (a.size() != b.size())
@@ -294,6 +322,7 @@ bool millerRabinTest(const vector<int> &num, const vector<int> &base)
     for (int i = 1; i < s; ++i)
     {
         x = modMultiply(x, x, num);
+        cout << i << endl;
         if (compareTwoBinaryNumbers(x, subTwoBinaryNumbers(num, {1})) == 0)
         {
             return true;
@@ -321,50 +350,61 @@ bool isPrime(const vector<int> &num, int iterations)
     return true;
 }
 
-int main()
-{
-    string hexString = "D119";
-    vector<int> binaryVector = convertHexToBinary(hexString);
-    for (int i = 0; i < binaryVector.size(); i++)
+int main(int argc, char* argv[]){
+    if (argc != 3)
     {
-        cout << binaryVector[i];
+        cout << "Usage: " << argv[0] << " <input_file> <output_file>" << endl;
+        return 1;
     }
-    cout << endl;
-    vector<int> testVector = convertHexToBinary("DE95");
-    for (int i = 0; i < testVector.size(); i++)
+
+    string inputFile = argv[1];
+    string outputFile = argv[2];
+
+    if (inputFile.empty() || outputFile.empty())
     {
-        cout << testVector[i];
+        cout << "Invalid input/output file" << endl;
+        return 1;
     }
-    cout << endl;
-    vector<int> result = addTwoBinaryNumbers(binaryVector, testVector);
-    for (int i = 0; i < result.size(); i++)
+
+    ifstream in(inputFile);
+    ofstream out(outputFile);
+    string hexString;
+    in >> hexString;
+    cout << hexString << endl;
+
+    vector<int> num = {};
+    cout << "Test" << endl;
+    num = convertHexToBinary(hexString);
+    cout << "Binary: ";
+    for (int i = 0; i < num.size(); i++)
     {
-        cout << result[i];
+        cout << num[i];
     }
+    int time = 1;
+    if (num.size() <= 256)
+    {
+        time = 10;
+    }
+    else if (num.size() <= 348)
+    {
+        time = 3;
+    }
+    else
+    {
+        time = 2;
+    }
+
+    if (isPrime(num, time))
+    {
+        out << 1;
+        cout << "Prime" << endl;
+    }
+    else
+    {
+        out << 0;
+        cout << "Composite" << endl;
+    }
+    in.close();
+    out.close();
+    return 0;
 }
-
-// int main()
-// {
-//     string hexString;
-//     vector<int> binaryVector;
-
-//     string nameFile = "test";
-
-//     ifstream in;
-//     in.open(nameFile + ".inp");
-//     ofstream out;
-//     out.open(nameFile + ".out");
-
-//     in >> hexString;
-//     binaryVector = convertHexToBinary(hexString);
-//     if (isPrime(binaryVector, 3))
-//     {
-//         out << "1";
-//     }
-//     else
-//     {
-//         out << "0";
-//     }
-
-//     return 0;
-// }
