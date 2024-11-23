@@ -16,12 +16,11 @@ Chuyen chuoi Hex sang chuoi Binary
 Input:	1 string ( chuoi Hex ) ( strHex ).
 Output: 1 vector ( chuoi Binary ).
 */
-vector<int> convertHexToBinary(string& strHex)
+vector<int> convertHexToBinary(string &strHex)
 {
     vector<int> arrBit = {};
     for (int i = 0; i < strHex.length(); i++)
-    {   
-        cout << i << ":" << endl;
+    {
         switch (strHex[i])
         {
         case '0':
@@ -152,22 +151,14 @@ vector<int> convertHexToBinary(string& strHex)
             arrBit.push_back(0);
             break;
         }
-        default: throw "Invalid hex string";
+        default:
+            throw "Invalid hex string";
         }
-        for (int i = 0; i < arrBit.size(); i++)
-        {
-            cout << arrBit[i];
-        }
-        cout << endl;
     }
-    cout << "End" << endl;
-    while (arrBit.size()>1 && arrBit[0]==0)
+    cout << endl;
+    while (arrBit.size() > 1 && arrBit[0] == 0)
     {
         arrBit.erase(arrBit.begin());
-        for (int i = 0; i < arrBit.size(); i++)
-        {
-            cout << arrBit[i];
-        }
     }
     return arrBit;
 }
@@ -301,56 +292,100 @@ vector<int> modExponentiate(const vector<int> &base, const vector<int> &exp, con
     return result;
 }
 
-// Kiểm tra Miller-Rabin
-bool millerRabinTest(const vector<int> &num, const vector<int> &base)
+// Kiểm tra Miller-Rabin và xác định số nguyên tố
+bool millerRabin(const vector<int> &num, int iterations)
 {
+    // Nếu num < 2 thì không phải số nguyên tố
+    if (compareTwoBinaryNumbers(num, {2}) < 0)
+    {
+        return false;
+    }
+
+    // Nếu num là 2 thì là số nguyên tố
+    if (compareTwoBinaryNumbers(num, {2}) == 0)
+    {
+        return true;
+    }
+
+    // Nếu num chẵn thì không phải số nguyên tố
+    if (num.back() == 0)
+    {
+        return false;
+    }
+
+    // Chuẩn bị cho kiểm tra Miller-Rabin
     vector<int> d = subTwoBinaryNumbers(num, {1}); // d = num - 1
     int s = 0;
 
+    // Tách d thành dạng d * 2^s
     while (!d.empty() && d.back() == 0)
     {
         d.pop_back();
         ++s;
     }
 
-    vector<int> x = modExponentiate(base, d, num);
-    if (compareTwoBinaryNumbers(x, {1}) == 0 || compareTwoBinaryNumbers(x, subTwoBinaryNumbers(num, {1})) == 0)
-    {
-        return true;
-    }
-
-    for (int i = 1; i < s; ++i)
-    {
-        x = modMultiply(x, x, num);
-        cout << i << endl;
-        if (compareTwoBinaryNumbers(x, subTwoBinaryNumbers(num, {1})) == 0)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Kiểm tra số nguyên tố
-bool isPrime(const vector<int> &num, int iterations)
-{
-    if (compareTwoBinaryNumbers(num, {2}) < 0)
-    {
-        return false;
-    }
     vector<vector<int>> baseCandidates = {{1, 0}, {1, 1}, {1, 0, 1}, {1, 1, 1}}; // 2, 3, 5, 7
+
+    // Lặp lại kiểm tra theo số lần `iterations`
+    vector<int> base;
     for (int i = 0; i < iterations; ++i)
     {
-        vector<int> base = baseCandidates[i % baseCandidates.size()];
-        if (!millerRabinTest(num, base))
+        // Chọn cơ số (base) từ danh sách các số nguyên tố nhỏ
+        switch (i%baseCandidates.size())
+        {
+        case 0:
+            base = baseCandidates[0];
+            break;
+        case 1:
+            base = baseCandidates[1];
+            break;
+        case 2:
+            base = baseCandidates[2];
+            break;
+        case 3:
+            base = baseCandidates[3];
+            break;
+        default:
+            break;
+        }
+        cout << "Iteration " << i + 1 << ": Base = ";
+        // Tính x = base^d mod num
+        vector<int> x = modExponentiate(base, d, num);
+        for (int i = 0; i < x.size(); i++)
+        {
+            cout << x[i];
+        }
+        // Nếu x == 1 hoặc x == num - 1, tiếp tục kiểm tra
+        if (compareTwoBinaryNumbers(x, {1}) == 0 || compareTwoBinaryNumbers(x, subTwoBinaryNumbers(num, {1})) == 0)
+        {
+            continue;
+        }
+
+        // Lặp qua s-1 bước để kiểm tra
+        bool found = false;
+        for (int j = 1; j < s; ++j)
+        {
+            x = modMultiply(x, x, num);
+            if (compareTwoBinaryNumbers(x, subTwoBinaryNumbers(num, {1})) == 0)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        // Nếu không thỏa điều kiện, chắc chắn không phải số nguyên tố
+        if (!found)
         {
             return false;
         }
     }
+
+    // Nếu qua tất cả kiểm tra, là số nguyên tố
     return true;
 }
 
-int main(int argc, char* argv[]){
+int main(int argc, char *argv[])
+{
     if (argc != 3)
     {
         cout << "Usage: " << argv[0] << " <input_file> <output_file>" << endl;
@@ -370,16 +405,16 @@ int main(int argc, char* argv[]){
     ofstream out(outputFile);
     string hexString;
     in >> hexString;
-    cout << hexString << endl;
+    cout << "Hex: " << hexString << endl;
 
-    vector<int> num = {};
-    cout << "Test" << endl;
-    num = convertHexToBinary(hexString);
+    vector<int> num = convertHexToBinary(hexString);
+    cout << endl;
     cout << "Binary: ";
     for (int i = 0; i < num.size(); i++)
     {
         cout << num[i];
     }
+    cout << endl;
     int time = 1;
     if (num.size() <= 256)
     {
@@ -393,8 +428,8 @@ int main(int argc, char* argv[]){
     {
         time = 2;
     }
-
-    if (isPrime(num, time))
+    cout << "Checking..." << endl;
+    if (millerRabin(num, time))
     {
         out << 1;
         cout << "Prime" << endl;
