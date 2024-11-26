@@ -18,14 +18,14 @@ Input:	1 string ( chuoi Hex ) ( strHex ).
 Output: 1 vector ( chuoi Binary ).
 */
 
-long long convertBinToDec(vector<int> &arr)
+void convertBinToDec(vector<int> arr)
 {
-    long long res = 0;
+    uint64_t res = 0;
     for (int i = 0; i < arr.size(); i++)
     {
         res = res * 2 + arr[i];
     }
-    return res;
+    cout << res<< endl;
 }
 
 vector<int> convertHexToBinary(string &strHex)
@@ -262,7 +262,7 @@ int compareTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
     {
         return a.size() > b.size() ? 1 : -1;
     }
-    for (int i = a.size() - 1; i >= 0; --i)
+    for (int i = 0; i < a.size(); i++)
     {
         if (a[i] != b[i])
         {
@@ -272,83 +272,85 @@ int compareTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
     return 0;
 }
 
-// vector<int> modBinaryNumber(const vector<int> &num, const vector<int> &mod)
-// {
-//     vector<int> remainder = num;
-//     cout << "Compare: " << compareTwoBinaryNumbers(remainder, mod) << endl;
-//     while (compareTwoBinaryNumbers(remainder, mod) >= 0)
-//     {
-//         remainder = subTwoBinaryNumbers(remainder, mod);
-//     }
-//     cout << "remainder = " << convertBinToDec(remainder) << endl;
+void divideBinaryNumbers(const vector<int> &dividend, const vector<int> &divisor,
+                         vector<int> &quotient, vector<int> &remainder)
+{
+    // Khởi tạo giá trị ban đầu
+    remainder.clear();
+    quotient.clear();
 
-//     return remainder;
-// }
+    // Lặp qua từng bit của dividend
+    for (size_t i = 0; i < dividend.size(); ++i)
+    {
+        // Đưa bit tiếp theo vào remainder
+        remainder.push_back(dividend[i]);
+        // Xóa các bit 0 thừa ở đầu remainder
+        while (remainder.size() > 1 && remainder[0] == 0)
+        {
+            remainder.erase(remainder.begin());
+        }
 
-// // Hàm nhân hai số nhị phân với modulo
-// vector<int> modMultiply(const vector<int> &num1, const vector<int> &num2, const vector<int> &mod)
-// {
-//     // Đặt x = num1 mod mod
-//     vector<int> x = modBinaryNumber(num1, mod); // Hàm tính số dư: x = num1 % mod
-//     vector<int> P = {0};                        // P ban đầu bằng 0
-//     vector<int> y = num2;
+        // Kiểm tra nếu remainder >= divisor
+        if (compareTwoBinaryNumbers(remainder, divisor) >= 0)
+        {
+            remainder = subTwoBinaryNumbers(remainder, divisor); // remainder -= divisor
+            quotient.push_back(1);                               // Thêm 1 vào quotient
+        }
+        else
+        {
+            quotient.push_back(0); // Thêm 0 vào quotient
+        }
+    }
 
-//     // Xử lý trường hợp y[0] > 0 (bit thấp nhất của y)
-//     if (!y.empty() && y.back() == 1)
-//     {
-//         P = x;
-//     }
+    // Xóa các bit 0 thừa ở đầu quotient
+    while (quotient.size() > 1 && quotient[0] == 0)
+    {
+        quotient.erase(quotient.begin());
+    }
+}
 
-//     // Lặp qua từng bit của y
-//     while (!y.empty())
-//     {
-//         // a. x = (2 * x) mod mod
-//         x.push_back(0); // Nhân x với 2 bằng cách thêm 1 bit 0 ở cuối
-//         if (compareTwoBinaryNumbers(x, mod) >= 0)
-//         {
-//             x = subTwoBinaryNumbers(x, mod); // Giảm x nếu x >= mod
-//         }
-
-//         // b. Tính P = (P + y_i * x) mod mod
-//         y.pop_back();                    // Loại bỏ bit thấp nhất (đã xử lý)
-//         if (!y.empty() && y.back() == 1) // Nếu bit tiếp theo của y là 1
-//         {
-//             P = addTwoBinaryNumbers(P, x);
-//             if (compareTwoBinaryNumbers(P, mod) >= 0)
-//             {
-//                 P = subTwoBinaryNumbers(P, mod);
-//             }
-//         }
-//     }
-
-//     return P; // Trả về kết quả
-// }
+vector<int> modBinary(const vector<int> &binaryNum, const vector<int> &mod)
+{
+    vector<int> remainder, quotient;
+    divideBinaryNumbers(binaryNum, mod, quotient, remainder); // Chia lấy dư
+    return remainder;
+}
 
 vector<int> modMultiply(const vector<int> &num1, const vector<int> &num2, const vector<int> &mod)
 {
-    vector<int> res = {0};
-    vector<int> tempA = num1;
-    vector<int> tempB = num2;
-    while (!tempB.empty())
+    vector<int> product = {0};                        // Kết quả ban đầu bằng 0
+    vector<int> moddedBinNum1 = modBinary(num1, mod); // num1 % mod
+    vector<int> currentMultiplier = num2;             // Sao chép num2 để xử lý
+
+    // Lặp qua từng bit của num2
+    while (!currentMultiplier.empty())
     {
-        if (tempB.back() == 1)
+        // Nếu bit cuối cùng của currentMultiplier bằng 1
+        if (currentMultiplier.back() == 1)
         {
-            res = addTwoBinaryNumbers(res, tempA);
-            cout << "\nres + tempA = " << convertBinToDec(res) << endl;
-            if (compareTwoBinaryNumbers(res, mod) >= 0)
+            product = addTwoBinaryNumbers(product, moddedBinNum1); // product += moddedBinNum1
+
+            // Nếu product >= mod, thực hiện modulo
+            if (compareTwoBinaryNumbers(product, mod) >= 0)
             {
-                res = subTwoBinaryNumbers(res, mod);
+                product = subTwoBinaryNumbers(product, mod);
             }
-            cout << "res mod mod = " << convertBinToDec(res) << endl;
         }
-        tempA.push_back(0);
-        if (compareTwoBinaryNumbers(tempA, mod) >= 0)
+
+        // Dịch trái moddedBinNum1 (tương đương nhân 2)
+        moddedBinNum1.push_back(0);
+
+        // Nếu moddedBinNum1 >= mod, thực hiện modulo
+        if (compareTwoBinaryNumbers(moddedBinNum1, mod) >= 0)
         {
-            tempA = subTwoBinaryNumbers(tempA, mod);
+            moddedBinNum1 = subTwoBinaryNumbers(moddedBinNum1, mod);
         }
-        tempB.pop_back();
+
+        // Loại bỏ bit cuối cùng của currentMultiplier
+        currentMultiplier.pop_back();
     }
-    return res;
+
+    return product;
 }
 
 // Hàm tính lũy thừa modulo
@@ -356,18 +358,12 @@ vector<int> modExponentiate(const vector<int> &base, const vector<int> &exp, con
 {
     vector<int> result = {1}; // Đại diện nhị phân cho số 1
     vector<int> temp = mod;
-    for (size_t i = 0; i < exp.size(); ++i)
+    for (size_t i = 0; i < exp.size(); i++)
     {
-        cout <<"(" << exp[i]<< ") "<< convertBinToDec(result) << " * " << convertBinToDec(result) << " mod " << convertBinToDec(temp) << " = ";
         result = modMultiply(result, result, mod);
-        cout << convertBinToDec(result) << endl;
         if (exp[i] == 1)
         {
             result = modMultiply(result, base, mod);
-        }
-        if (i==2)
-        {
-            break;
         }
     }
     return result;
@@ -413,10 +409,6 @@ vector<int> generateRandomBase(const vector<int> &num)
 // Kiểm tra Miller-Rabin và xác định số nguyên tố
 bool millerRabin(const vector<int> &num, int iterations)
 {
-    for (int i = 0; i < num.size(); i++)
-    {
-        cout << num[i];
-    }
     // Nếu num < 2 thì không phải số nguyên tố
     if (compareTwoBinaryNumbers(num, {2}) < 0)
     {
@@ -437,13 +429,11 @@ bool millerRabin(const vector<int> &num, int iterations)
 
     // Chuẩn bị cho kiểm tra Miller-Rabin
     vector<int> d = subTwoBinaryNumbers(num, {1}); // d = num - 1
-    vector<int> numMinusOne = d;
-    cout << "num - 1 = ";
+    vector<int> numMinusOne;
     for (int i = 0; i < d.size(); i++)
     {
-        cout << d[i];
+        numMinusOne.push_back(d[i]);
     }
-    cout << endl;
     int s = 0;
 
     // Tách num-1 thành dạng d * 2^s
@@ -452,7 +442,7 @@ bool millerRabin(const vector<int> &num, int iterations)
         d.pop_back();
         ++s;
     }
-    cout << "n - 1 = 2^s.d with:" << endl; 
+    cout << "n - 1 = 2^s.d with:" << endl;
     cout << "s = " << s << endl;
     cout << "d = ";
     for (int i = 0; i < d.size(); i++)
@@ -461,6 +451,7 @@ bool millerRabin(const vector<int> &num, int iterations)
     }
     cout << endl;
     // Lặp lại kiểm tra theo số lần `iterations`
+    cout << "==========MILLER-RABIN TEST==========" << endl;
     vector<int> base;
     for (int i = 0; i < iterations; ++i)
     {
@@ -472,13 +463,17 @@ bool millerRabin(const vector<int> &num, int iterations)
         {
             cout << bit;
         }
-        cout << " = " << convertBinToDec(base) << endl;
+        cout << "(2) = "; 
+        convertBinToDec(base);
         // Tính x = base^d mod num
-        vector<int> tempNum = num;
-        cout << "num = " << convertBinToDec(tempNum) << endl;
-        cout << endl;
-        cout << "x = base^d mod num = ";
         vector<int> x = modExponentiate(base, d, num);
+        cout << "-> x = base^d mod num = ";
+        for (int bit : x)
+        {
+            cout << bit;
+        }
+        cout << "(2) = ";
+        convertBinToDec(x);
         // Nếu x == 1 hoặc x == num - 1, tiếp tục kiểm tra
         if (compareTwoBinaryNumbers(x, {1}) == 0 || compareTwoBinaryNumbers(x, numMinusOne) == 0)
         {
@@ -489,8 +484,14 @@ bool millerRabin(const vector<int> &num, int iterations)
         bool found = false;
         for (int j = 1; j < s; ++j)
         {
-            cout << "j = " << j << endl;
+            cout << "-> Loop " << j << ": x = x^2 mod num = ";
             x = modMultiply(x, x, num);
+            for (int bit : x)
+            {
+                cout << bit;
+            }
+            cout << "(2) = ";
+            convertBinToDec(x);
             if (compareTwoBinaryNumbers(x, subTwoBinaryNumbers(num, {1})) == 0)
             {
                 found = true;
@@ -516,7 +517,6 @@ int main(int argc, char *argv[])
         cout << "Usage: " << argv[0] << " <input_file> <output_file>" << endl;
         return 1;
     }
-    
     string inputFile = argv[1];
     string outputFile = argv[2];
 
