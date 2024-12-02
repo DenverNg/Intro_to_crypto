@@ -5,20 +5,52 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <random>
 using namespace std;
 
-const vector<int> Bit0 = {0};
-const vector<int> Bit1 = {1};
-const vector<int> Bit2 = {0, 1};
-
-/*
-Chuyen chuoi Hex sang chuoi Binary
-Input:	1 string ( chuoi Hex ) ( strHex ).
-Output: 1 vector ( chuoi Binary ).
-*/
-vector<int> convertHexToBinary(string strHex)
+void convertBinToDec(vector<int> arr)
 {
-    vector<int> arrBit;
+    long long res = 0;
+    for (int i = 0; i < arr.size(); i++)
+    {
+        res = res * 2 + arr[i];
+    }
+    cout << res << endl;
+}
+
+string convertBinaryToHex(const vector<int> &binary)
+{
+    // Nếu vector nhị phân rỗng, trả về chuỗi rỗng
+    if (binary.empty())
+        return "";
+
+    // Đảm bảo số lượng bit chia hết cho 4 bằng cách thêm các bit 0 ở đầu
+    vector<int> paddedBinary = binary;
+    while (paddedBinary.size() % 4 != 0)
+    {
+        paddedBinary.insert(paddedBinary.begin(), 0);
+    }
+
+    string hexResult = "";
+    for (size_t i = 0; i < paddedBinary.size(); i += 4)
+    {
+        int decimalValue = paddedBinary[i] * 8 + paddedBinary[i + 1] * 4 + paddedBinary[i + 2] * 2 + paddedBinary[i + 3];
+        if (decimalValue < 10)
+        {
+            hexResult += (char)('0' + decimalValue); // Chuyển số 0-9
+        }
+        else
+        {
+            hexResult += (char)('A' + decimalValue - 10); // Chuyển số 10-15 thành A-F
+        }
+    }
+
+    return hexResult;
+}
+
+vector<int> convertHexToBinary(string &strHex)
+{
+    vector<int> arrBit = {};
     for (int i = 0; i < strHex.length(); i++)
     {
         switch (strHex[i])
@@ -33,42 +65,42 @@ vector<int> convertHexToBinary(string strHex)
         }
         case '1':
         {
+            arrBit.push_back(0);
+            arrBit.push_back(0);
+            arrBit.push_back(0);
             arrBit.push_back(1);
-            arrBit.push_back(0);
-            arrBit.push_back(0);
-            arrBit.push_back(0);
             break;
         }
         case '2':
         {
             arrBit.push_back(0);
-            arrBit.push_back(1);
             arrBit.push_back(0);
+            arrBit.push_back(1);
             arrBit.push_back(0);
             break;
         }
         case '3':
         {
-            arrBit.push_back(1);
-            arrBit.push_back(1);
             arrBit.push_back(0);
             arrBit.push_back(0);
+            arrBit.push_back(1);
+            arrBit.push_back(1);
             break;
         }
         case '4':
         {
             arrBit.push_back(0);
-            arrBit.push_back(0);
             arrBit.push_back(1);
+            arrBit.push_back(0);
             arrBit.push_back(0);
             break;
         }
         case '5':
         {
-            arrBit.push_back(1);
             arrBit.push_back(0);
             arrBit.push_back(1);
             arrBit.push_back(0);
+            arrBit.push_back(1);
             break;
         }
         case '6':
@@ -81,18 +113,18 @@ vector<int> convertHexToBinary(string strHex)
         }
         case '7':
         {
-            arrBit.push_back(1);
-            arrBit.push_back(1);
-            arrBit.push_back(1);
             arrBit.push_back(0);
+            arrBit.push_back(1);
+            arrBit.push_back(1);
+            arrBit.push_back(1);
             break;
         }
         case '8':
         {
-            arrBit.push_back(0);
-            arrBit.push_back(0);
-            arrBit.push_back(0);
             arrBit.push_back(1);
+            arrBit.push_back(0);
+            arrBit.push_back(0);
+            arrBit.push_back(0);
             break;
         }
         case '9':
@@ -105,42 +137,42 @@ vector<int> convertHexToBinary(string strHex)
         }
         case 'A':
         {
-            arrBit.push_back(0);
             arrBit.push_back(1);
             arrBit.push_back(0);
             arrBit.push_back(1);
+            arrBit.push_back(0);
             break;
         }
         case 'B':
         {
             arrBit.push_back(1);
-            arrBit.push_back(1);
             arrBit.push_back(0);
+            arrBit.push_back(1);
             arrBit.push_back(1);
             break;
         }
         case 'C':
         {
-            arrBit.push_back(0);
-            arrBit.push_back(0);
             arrBit.push_back(1);
             arrBit.push_back(1);
+            arrBit.push_back(0);
+            arrBit.push_back(0);
             break;
         }
         case 'D':
         {
             arrBit.push_back(1);
-            arrBit.push_back(0);
             arrBit.push_back(1);
+            arrBit.push_back(0);
             arrBit.push_back(1);
             break;
         }
         case 'E':
         {
+            arrBit.push_back(1);
+            arrBit.push_back(1);
+            arrBit.push_back(1);
             arrBit.push_back(0);
-            arrBit.push_back(1);
-            arrBit.push_back(1);
-            arrBit.push_back(1);
             break;
         }
         case 'F':
@@ -151,658 +183,339 @@ vector<int> convertHexToBinary(string strHex)
             arrBit.push_back(1);
             break;
         }
+        default:
+            throw "Invalid hex string";
         }
     }
-    while (arrBit[arrBit.size() - 1] == 0 && arrBit.size() > 1)
+    while (arrBit.size() > 1 && arrBit[0] == 0)
     {
-        arrBit.pop_back();
+        arrBit.erase(arrBit.begin());
     }
     return arrBit;
 }
 
-/*
-Chuyen chuoi Binary sang chuoi Hex
-Input:	1 vector ( chuoi Binary ) ( arrBit ).
-Output: 1 string ( chuoi Hex ).
-*/
-string convertBinaryToHex(vector<int> arrBit)
+// Hàm cộng hai số nhị phân
+vector<int> addTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
 {
-    string strHex;
-    while (arrBit.size() % 4 != 0)
+    // Tạo bản sao của các vector để không ảnh hưởng đến tham số gốc
+    vector<int> num1 = a;
+    vector<int> num2 = b;
+
+    // Bổ sung các bit 0 vào cuối để hai số có độ dài bằng nhau
+    while (num1.size() < num2.size())
     {
-        arrBit.push_back(0);
+        num1.insert(num1.begin(), 0); // Chèn bit 0 vào đầu num1
     }
-    for (int i = 3; i < arrBit.size(); i += 4)
+    while (num2.size() < num1.size())
     {
-        if (arrBit[i] == 0 && arrBit[i - 1] == 0 && arrBit[i - 2] == 0 && arrBit[i - 3] == 0)
-            strHex += "0";
-        if (arrBit[i] == 0 && arrBit[i - 1] == 0 && arrBit[i - 2] == 0 && arrBit[i - 3] == 1)
-            strHex += "1";
-        if (arrBit[i] == 0 && arrBit[i - 1] == 0 && arrBit[i - 2] == 1 && arrBit[i - 3] == 0)
-            strHex += "2";
-        if (arrBit[i] == 0 && arrBit[i - 1] == 0 && arrBit[i - 2] == 1 && arrBit[i - 3] == 1)
-            strHex += "3";
-        if (arrBit[i] == 0 && arrBit[i - 1] == 1 && arrBit[i - 2] == 0 && arrBit[i - 3] == 0)
-            strHex += "4";
-        if (arrBit[i] == 0 && arrBit[i - 1] == 1 && arrBit[i - 2] == 0 && arrBit[i - 3] == 1)
-            strHex += "5";
-        if (arrBit[i] == 0 && arrBit[i - 1] == 1 && arrBit[i - 2] == 1 && arrBit[i - 3] == 0)
-            strHex += "6";
-        if (arrBit[i] == 0 && arrBit[i - 1] == 1 && arrBit[i - 2] == 1 && arrBit[i - 3] == 1)
-            strHex += "7";
-        if (arrBit[i] == 1 && arrBit[i - 1] == 0 && arrBit[i - 2] == 0 && arrBit[i - 3] == 0)
-            strHex += "8";
-        if (arrBit[i] == 1 && arrBit[i - 1] == 0 && arrBit[i - 2] == 0 && arrBit[i - 3] == 1)
-            strHex += "9";
-        if (arrBit[i] == 1 && arrBit[i - 1] == 0 && arrBit[i - 2] == 1 && arrBit[i - 3] == 0)
-            strHex += "A";
-        if (arrBit[i] == 1 && arrBit[i - 1] == 0 && arrBit[i - 2] == 1 && arrBit[i - 3] == 1)
-            strHex += "B";
-        if (arrBit[i] == 1 && arrBit[i - 1] == 1 && arrBit[i - 2] == 0 && arrBit[i - 3] == 0)
-            strHex += "C";
-        if (arrBit[i] == 1 && arrBit[i - 1] == 1 && arrBit[i - 2] == 0 && arrBit[i - 3] == 1)
-            strHex += "D";
-        if (arrBit[i] == 1 && arrBit[i - 1] == 1 && arrBit[i - 2] == 1 && arrBit[i - 3] == 0)
-            strHex += "E";
-        if (arrBit[i] == 1 && arrBit[i - 1] == 1 && arrBit[i - 2] == 1 && arrBit[i - 3] == 1)
-            strHex += "F";
+        num2.insert(num2.begin(), 0); // Chèn bit 0 vào đầu num2
     }
-    return strHex;
+
+    vector<int> result(num1.size() + 1, 0); // Thêm 1 để dự phòng carry
+    int carry = 0;                          // Biến lưu giá trị nhớ
+
+    // Cộng từ đáy lên
+    for (int i = num1.size() - 1; i >= 0; --i)
+    {
+        int sum = num1[i] + num2[i] + carry; // Tổng hai bit và carry
+        result[i + 1] = sum % 2;             // Lấy bit kết quả (0 hoặc 1)
+        carry = sum / 2;                     // Tính carry mới
+    }
+
+    // Xử lý carry ở bit cao nhất
+    result[0] = carry;
+
+    // Loại bỏ các bit 0 thừa phía trước nếu cần
+    while (result.size() > 1 && result[0] == 0)
+    {
+        result.erase(result.begin());
+    }
+
+    return result;
+}
+// Hàm trừ hai số nhị phân (a >= b)
+vector<int> subTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
+{
+    vector<int> result(a.size(), 0); // Kết quả có cùng kích thước với `a`
+    int borrow = 0;
+
+    int i = a.size() - 1; // Con trỏ bit cuối của `a`
+    int j = b.size() - 1; // Con trỏ bit cuối của `b`
+
+    // Thực hiện trừ từng bit
+    while (i >= 0)
+    {
+        int bitA = a[i];                // Bit từ `a`
+        int bitB = (j >= 0) ? b[j] : 0; // Bit từ `b` (nếu vượt ngoài chỉ số thì xem như 0)
+
+        // Tính bit kết quả và cập nhật borrow
+        int diff = bitA - bitB - borrow;
+        if (diff < 0)
+        {
+            diff += 2;  // Mượn từ bit cao hơn
+            borrow = 1; // Đánh dấu mượn
+        }
+        else
+        {
+            borrow = 0;
+        }
+
+        result[i] = diff; // Lưu bit kết quả
+        i--;
+        j--;
+    }
+
+    // Loại bỏ các bit 0 thừa phía trước nếu cần
+    while (result.size() > 1 && result[0] == 0)
+    {
+        result.erase(result.begin());
+    }
+
+    return result;
 }
 
-/*
-Kiem tra chuoi Hex co phai la 2 hoac la 3 khong ?
-*	Mo rong:	Kiem tra co phai la 0 hoac 1 khong ?
-Input:	1 string ( chuoi Hex ) ( strHex ).
-Output:	1 trong 3 gia tri ( 0, 1, 2 ).
-        *	1:	Chuoi Hex la 2 hoac la 3.
-        *	2:	Chuoi Hex la 0 hoac la 1.
-        *	0:	Chuoi Hex khong thuoc cac truong hop tren.
-*/
-int isNumber2or3(string strHex)
+// So sánh hai số nhị phân
+// Trả về 1 nếu a > b, -1 nếu a < b, 0 nếu a = b
+int compareTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
 {
-    if (strHex.length() != 1)
-        return 0;
-    if (strHex == "0" || strHex == "1")
-        return 2;
-    if (strHex == "2" || strHex == "3")
+    if (a.size() != b.size())
+    {
+        return a.size() > b.size() ? 1 : -1;
+    }
+    for (int i = 0; i < a.size(); i++)
+    {
+        if (a[i] != b[i])
+        {
+            return a[i] > b[i] ? 1 : -1;
+        }
+    }
+    return 0;
+}
+
+void divideBinaryNumbers(const vector<int> &dividend, const vector<int> &divisor,
+                         vector<int> &quotient, vector<int> &remainder)
+{
+    // Khởi tạo giá trị ban đầu
+    remainder.clear();
+    quotient.clear();
+
+    // Lặp qua từng bit của dividend
+    for (size_t i = 0; i < dividend.size(); ++i)
+    {
+        // Đưa bit tiếp theo vào remainder
+        remainder.push_back(dividend[i]);
+        // Xóa các bit 0 thừa ở đầu remainder
+        while (remainder.size() > 1 && remainder[0] == 0)
+        {
+            remainder.erase(remainder.begin());
+        }
+
+        // Kiểm tra nếu remainder >= divisor
+        if (compareTwoBinaryNumbers(remainder, divisor) >= 0)
+        {
+            remainder = subTwoBinaryNumbers(remainder, divisor); // remainder -= divisor
+            quotient.push_back(1);                               // Thêm 1 vào quotient
+        }
+        else
+        {
+            quotient.push_back(0); // Thêm 0 vào quotient
+        }
+    }
+
+    // Xóa các bit 0 thừa ở đầu quotient
+    while (quotient.size() > 1 && quotient[0] == 0)
+    {
+        quotient.erase(quotient.begin());
+    }
+}
+
+vector<int> modBinary(const vector<int> &binaryNum, const vector<int> &mod)
+{
+    vector<int> remainder, quotient;
+    divideBinaryNumbers(binaryNum, mod, quotient, remainder); // Chia lấy dư
+    return remainder;
+}
+
+vector<int> multiplyBinaryNumbers(const vector<int> &a, const vector<int> &b)
+{
+    vector<int> result(a.size() + b.size(), 0); // Kết quả có thể tối đa là tổng độ dài của hai số
+
+    // Lặp qua từng bit của `a`
+    for (int i = a.size() - 1; i >= 0; i--)
+    {
+        int carry = 0; // Giá trị nhớ khi thực hiện nhân từng bit
+        for (int j = b.size() - 1; j >= 0; j--)
+        {
+            // Tính tích của hai bit và cộng vào vị trí thích hợp trong `result`
+            int product = a[i] * b[j] + result[i + j + 1] + carry;
+            result[i + j + 1] = product % 2; // Lưu kết quả
+            carry = product / 2;             // Cập nhật giá trị nhớ
+        }
+        result[i] += carry; // Cộng carry vào vị trí tiếp theo
+    }
+
+    // Loại bỏ các bit 0 thừa ở đầu kết quả nếu cần
+    while (result.size() > 1 && result[0] == 0)
+    {
+        result.erase(result.begin());
+    }
+
+    return result;
+}
+
+vector<int> modMultiply(const vector<int> &num1, const vector<int> &num2, const vector<int> &mod)
+{
+    vector<int> product = {0};                        // Kết quả ban đầu bằng 0
+    vector<int> moddedBinNum1 = modBinary(num1, mod); // num1 % mod
+    vector<int> currentMultiplier = num2;             // Sao chép num2 để xử lý
+
+    // Lặp qua từng bit của num2
+    while (!currentMultiplier.empty())
+    {
+        // Nếu bit cuối cùng của currentMultiplier bằng 1
+        if (currentMultiplier.back() == 1)
+        {
+            product = addTwoBinaryNumbers(product, moddedBinNum1); // product += moddedBinNum1
+
+            // Nếu product >= mod, thực hiện modulo
+            if (compareTwoBinaryNumbers(product, mod) >= 0)
+            {
+                product = subTwoBinaryNumbers(product, mod);
+            }
+        }
+
+        // Dịch trái moddedBinNum1 (tương đương nhân 2)
+        moddedBinNum1.push_back(0);
+
+        // Nếu moddedBinNum1 >= mod, thực hiện modulo
+        if (compareTwoBinaryNumbers(moddedBinNum1, mod) >= 0)
+        {
+            moddedBinNum1 = subTwoBinaryNumbers(moddedBinNum1, mod);
+        }
+
+        // Loại bỏ bit cuối cùng của currentMultiplier
+        currentMultiplier.pop_back();
+    }
+
+    return product;
+}
+
+// Hàm tính lũy thừa modulo
+vector<int> modExponentiate(const vector<int> &base, const vector<int> &exp, const vector<int> &mod)
+{
+    vector<int> result = {1}; // Đại diện nhị phân cho số 1
+    vector<int> temp = mod;
+    for (size_t i = 0; i < exp.size(); i++)
+    {
+        result = modMultiply(result, result, mod);
+        if (exp[i] == 1)
+        {
+            result = modMultiply(result, base, mod);
+        }
+    }
+    return result;
+}
+
+void printBinary(const vector<int> &binary)
+{
+    for (int bit : binary)
+    {
+        cout << bit;
+    }
+    cout << " = ";
+    convertBinToDec(binary);
+}
+
+void readInputFile(const string &inputFile, vector<vector<int>> &messages, vector<vector<int>> &ciphertexts, vector<int> &N, vector<int> &e)
+{
+    ifstream inFile(inputFile);
+    if (!inFile.is_open())
+    {
+        cerr << "Error: Cannot open input file." << endl;
+        exit(1);
+    }
+
+    int x, y;
+    string hexN, hexE;
+    inFile >> x >> y;
+    inFile >> hexN >> hexE;
+
+    N = convertHexToBinary(hexN);
+    e = convertHexToBinary(hexE);
+
+    messages.resize(x);
+    for (int i = 0; i < x; ++i)
+    {
+        string hexMessage;
+        inFile >> hexMessage;
+        messages[i] = convertHexToBinary(hexMessage);
+    }
+
+    ciphertexts.resize(y);
+    for (int i = 0; i < y; ++i)
+    {
+        string hexCipher;
+        inFile >> hexCipher;
+        ciphertexts[i] = convertHexToBinary(hexCipher);
+    }
+
+    inFile.close();
+}
+
+// Viết kết quả ra file
+void writeOutputFile(const string &outputFile, const vector<int> &results)
+{
+    ofstream outFile(outputFile);
+    if (!outFile.is_open())
+    {
+        cerr << "Error: Cannot open output file." << endl;
+        exit(1);
+    }
+
+    for (size_t i = 0; i < results.size(); ++i)
+    {
+        outFile << results[i] << (i == results.size() - 1 ? "" : " ");
+    }
+    outFile.close();
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc != 3)
+    {
+        cout << "Usage: " << argv[0] << " <input_file> <output_file>" << endl;
         return 1;
-    return 0;
-}
-
-/*
-Kiem tra chuoi Hex co phai la so chan khong ?
-Input:	1 string ( chuoi Hex ) ( strHex ).
-Output:	True hoac False.
-        *	True:	Chuoi Hex la 1 so chan.
-        *	False:	Chuoi Hex la 1 so le.
-*/
-bool isEvenNumber(string strHex)
-{
-    char tempStrHex = strHex[0];
-    if (tempStrHex == '0' || tempStrHex == '2' || tempStrHex == '4' || tempStrHex == '6' || tempStrHex == '8' || tempStrHex == 'A' || tempStrHex == 'C' || tempStrHex == 'E')
-        return true;
-    return false;
-}
-
-/*
-So sanh 2 so nguyen lon duoi dang Binary
-Input:	1 vector ( chuoi Binary ) ( arrBit1 ), 1 vector ( chuoi Binary ) ( arrBit2 ).
-Output:	1 vector ( chuoi Binary ).
-Output:	1 trong 3 gia tri ( 0, 1, 2 ).
-        *	1  :	a > b.
-        *	-1 :	a < b.
-        *	0  :	a = b.
-*/
-int compareBigNum(vector<int> arrBit1, vector<int> arrBit2)
-{
-    if (arrBit1.size() != arrBit2.size())
-    {
-        if (arrBit1.size() > arrBit2.size())
-            return 1;
-        else
-            return -1;
     }
-    for (int i = arrBit1.size() - 1; i >= 0; i--)
-    {
-        if (arrBit1[i] > arrBit2[i])
-            return 1;
-        if (arrBit1[i] < arrBit2[i])
-            return -1;
-    }
-    return 0;
-}
 
-/*
-Tim s va r trong:
-n - 1 = ( 2 ^ s ) * r. Voi r la 1 so le.
+    string inputFile = argv[1];
+    string outputFile = argv[2];
 
-Input:	1 vector ( chuoi Binary ) ( arrBitN ), 1 so nguyen ( s )
-        , 1 vector ( chuoi Binary ) ( arrBitR ).
-Output:	Ket qua khong tra truc tiep ve ma thong qua 2 bien ( s ) va ( arrBitR ).
-*/
-void findSandR(vector<int> arrBitN, int &s, vector<int> &arrBitR)
-{
-    s = 0;
-    vector<int> tempArrBit = arrBitN;
-    tempArrBit[0] = 0;
-    while (tempArrBit[0] == 0)
-    {
-        s++;
-        tempArrBit.erase(tempArrBit.begin());
-    }
-    arrBitR = tempArrBit;
-}
+    vector<vector<int>> messages, ciphertexts;
+    vector<int> N, e;
 
-/*
-Cong 2 so nguyen lon duoi dang Binary
-Input:	1 vector ( chuoi Binary ) ( arrBit1 ), 1 vector ( chuoi Binary ) ( arrBit2 ).
-Output:	1 vector ( chuoi Binary ).
-*/
-vector<int> addBigNum(vector<int> arrBit1, vector<int> arrBit2)
-{
-    vector<int> arrBitResult;
-    int carry = 0;
-    if (arrBit1.size() == 0)
-        return arrBit2;
-    if (arrBit2.size() == 0)
-        return arrBit1;
+    // Đọc dữ liệu đầu vào
+    readInputFile(inputFile, messages, ciphertexts, N, e);
 
-    while (arrBit1.size() != arrBit2.size())
-    {
-        if (arrBit1.size() > arrBit2.size())
-            arrBit2.push_back(0);
-        else
-            arrBit1.push_back(0);
-    }
-    for (int i = 0; i < arrBit1.size(); i++)
-    {
-        arrBitResult.push_back((arrBit1[i] + arrBit2[i] + carry) % 2);
-        if (arrBit1[i] + arrBit2[i] + carry >= 2)
-            carry = 1;
-        else
-            carry = 0;
-    }
-    if (carry == 1)
-        arrBitResult.push_back(1);
-    while (arrBitResult[arrBitResult.size() - 1] == 0 && arrBitResult.size() > 1)
-    {
-        arrBitResult.pop_back();
-    }
-    return arrBitResult;
-}
+    vector<int> results(messages.size(), -1);
 
-/*
-Nhan 2 so nguyen lon duoi dang Binary
-Input:	1 vector ( chuoi Binary ) ( arrBit1 ), 1 vector ( chuoi Binary ) ( arrBit2 ).
-Output:	1 vector ( chuoi Binary ).
-*/
-vector<int> mulBigNum(vector<int> arrBit1, vector<int> arrBit2)
-{
-    vector<int> arrBitResult;
-    vector<int> tempArrBit2 = arrBit2;
+    // Xử lý từng tin nhắn
+    for (size_t i = 0; i < messages.size(); ++i)
+    {
+        vector<int> encodedMessage = modExponentiate(messages[i], e, N);
 
-    if (compareBigNum(Bit2, arrBit1) == 0)
-    {
-        arrBit2.insert(arrBit2.begin(), 0);
-        return arrBit2;
-    }
-    else
-    {
-        if (compareBigNum(Bit2, arrBit2) == 0)
+        // Tìm bản mã tương ứng
+        for (size_t j = 0; j < ciphertexts.size(); ++j)
         {
-            arrBit1.insert(arrBit1.begin(), 0);
-            return arrBit1;
-        }
-    }
-
-    for (int i = 0; i < arrBit1.size(); i++)
-    {
-        if (i != 0)
-        {
-            tempArrBit2.insert(tempArrBit2.begin(), 0);
-        }
-        if (arrBit1[i] == 1)
-        {
-            arrBitResult = addBigNum(arrBitResult, tempArrBit2);
-        }
-    }
-    return arrBitResult;
-}
-
-/*
-Tru 2 so nguyen lon duoi dang Binary
-Input:	1 vector ( chuoi Binary ) ( arrBit1 ), 1 vector ( chuoi Binary ) ( arrBit2 ).
-Output:	1 vector ( chuoi Binary ).
-*/
-vector<int> subBigNum(vector<int> arrBit1, vector<int> arrBit2)
-{
-    vector<int> arrBitResult;
-    int carry = 0;
-    int tempCarry = 0;
-    while (arrBit1.size() != arrBit2.size())
-    {
-        if (arrBit1.size() > arrBit2.size())
-            arrBit2.push_back(0);
-        else
-            arrBit1.push_back(0);
-    }
-    for (int i = 0; i < arrBit1.size(); i++)
-    {
-        if (arrBit1[i] >= arrBit2[i] + carry)
-        {
-            arrBitResult.push_back(arrBit1[i] - (arrBit2[i] + carry));
-            carry = 0;
-        }
-        else
-        {
-            if (arrBit1[i] - (arrBit2[i] + carry) == -1)
+            if (compareTwoBinaryNumbers(encodedMessage, ciphertexts[j]) == 0)
             {
-                arrBitResult.push_back(1);
-                carry = 1;
-            }
-            else
-            {
-                arrBitResult.push_back(0);
-                carry = 1;
-            }
-        }
-    }
-    while (arrBitResult[arrBitResult.size() - 1] == 0 && arrBitResult.size() > 1)
-    {
-        arrBitResult.pop_back();
-    }
-    return arrBitResult;
-}
-
-/*
-Chia 2 so nguyen lon duoi dang Binary
-Input:	1 vector ( chuoi Binary ) ( arrBit1 ), 1 vector ( chuoi Binary ) ( arrBit2 )
-        , 1 vector ( chuoi Binary ) ( arrBit3 ), 1 vector ( chuoi Binary ) ( arrBit4 ).
-Output:	Ket qua khong tra truc tiep ve ma thong qua 2 bien ( arrBit3 ) va ( arrBit4 ).
-        *	arrBit3: Phan nguyen.
-        *	arrBit4: Phan du.
-*/
-void divBigNum(vector<int> arrBit1, vector<int> arrBit2, vector<int> &arrBit3, vector<int> &arrBit4)
-{
-    arrBit3.clear();
-    arrBit4.clear();
-    vector<int> tempArrBit1 = arrBit1;
-    vector<int> tempArrBit2 = arrBit2;
-    if (compareBigNum(tempArrBit1, tempArrBit2) == -1)
-    {
-        arrBit3 = Bit0;
-        arrBit4 = tempArrBit1;
-        return;
-    }
-    if (compareBigNum(arrBit2, Bit2) == 0)
-    {
-        if (tempArrBit1[0] == 0)
-        {
-            tempArrBit1.erase(tempArrBit1.begin());
-            arrBit3 = tempArrBit1;
-            arrBit4 = Bit0;
-            return;
-        }
-        else
-        {
-            tempArrBit1.erase(tempArrBit1.begin());
-            arrBit3 = tempArrBit1;
-            arrBit4 = Bit1;
-            return;
-        }
-    }
-
-    while (compareBigNum(tempArrBit1, tempArrBit2) != -1)
-    {
-        tempArrBit2.insert(tempArrBit2.begin(), 0);
-    }
-    tempArrBit2.erase(tempArrBit2.begin());
-    arrBit3.push_back(1);
-    tempArrBit1 = subBigNum(tempArrBit1, tempArrBit2);
-
-    while (tempArrBit2.size() > arrBit2.size())
-    {
-        tempArrBit2.erase(tempArrBit2.begin());
-        if (compareBigNum(tempArrBit1, tempArrBit2) == -1)
-        {
-            arrBit3.insert(arrBit3.begin(), 0);
-        }
-        else
-        {
-            arrBit3.insert(arrBit3.begin(), 1);
-            tempArrBit1 = subBigNum(tempArrBit1, tempArrBit2);
-        }
-    }
-    arrBit4 = tempArrBit1;
-}
-
-/*
-Tao 1 so nguyen lon tu A den B
-Input:	1 vector ( chuoi Binary ) ( arrBit1 ), 1 vector ( chuoi Binary ) ( arrBit2 ).
-Output:	1 vector ( chuoi Binary ).
-*/
-vector<int> genArrBit(vector<int> &arrBit1, vector<int> &arrBit2)
-{
-    vector<int> arrBitResult;
-    srand(time(NULL));
-    int len;
-    if (arrBit2.size() - arrBit1.size() == 0)
-        len = arrBit1.size();
-    else
-        len = (rand() % (arrBit2.size() - arrBit1.size())) + arrBit1.size();
-    do
-    {
-        arrBitResult.clear();
-        for (int j = 0; j < len; j++)
-        {
-            arrBitResult.push_back(rand() % 2);
-        }
-        while (arrBitResult[arrBitResult.size() - 1] == 0 && arrBitResult.size() > 1)
-        {
-            arrBitResult.pop_back();
-        }
-    } while (compareBigNum(arrBitResult, arrBit1) < 0 || compareBigNum(arrBitResult, arrBit2) > 0);
-    return arrBitResult;
-}
-
-/*
-Nhan binh phuong co lap:
-    y = ( a ^ r ) mod n. Voi a < n
-Input:	1 vector ( chuoi Binary ) ( arrBitA ), 1 vector ( chuoi Binary ) ( arrBitN )
-        , 1 vector ( chuoi Binary ) ( arrBitR ), 1 vector ( chuoi Binary ) ( arrBitY ).
-Output:	Ket qua khong tra truc tiep ve ma thong qua bien ( arrBitY ).
-*/
-void iterativeSquaring(vector<int> arrBitA, vector<int> arrBitN, vector<int> arrBitR, vector<int> &arrBitY)
-{
-    vector<int> tempArrBitA;
-    vector<int> tempArrBitB;
-    vector<int> tempArrBit;
-    if (compareBigNum(arrBitA, Bit0) == 0 || compareBigNum(arrBitA, arrBitR) == 0)
-    {
-        arrBitY = Bit0;
-        return;
-    }
-    if (compareBigNum(arrBitR, Bit0) == 0)
-    {
-        arrBitY = Bit1;
-        return;
-    }
-
-    tempArrBitA = arrBitA;
-    tempArrBitB.push_back(1);
-
-    if (arrBitR[0] == 1)
-        tempArrBitB = arrBitA;
-
-    for (int i = 1; i < arrBitR.size(); i++)
-    {
-        divBigNum(mulBigNum(tempArrBitA, tempArrBitA), arrBitN, tempArrBit, tempArrBitA);
-        if (arrBitR[i] == 1 && i != 0)
-            divBigNum(mulBigNum(tempArrBitA, tempArrBitB), arrBitN, tempArrBit, tempArrBitB);
-    }
-
-    while (tempArrBitB[tempArrBitB.size() - 1] == 0 && tempArrBitB.size() > 1)
-    {
-        tempArrBitB.pop_back();
-    }
-    arrBitY = tempArrBitB;
-}
-
-/*
-Kiem tra N co phai la so nguyen to khong ? ( voi so lan t nhat dinh )
-Input:	1 vector ( chuoi Binary ) ( arrBit1 ),  1 so nguyen ( t ).
-Output:	True hoac False.
-        *	True:	La so nguyen to.
-        *	False:	Khong phai so nguyen to.
-*/
-bool millerRabin(vector<int> arrBitN, int t)
-{
-    vector<int> tempArrBit;
-    vector<int> tempArrBitN;
-    vector<int> arrBitR;
-
-    vector<int> tempArrBit2 = Bit2;
-    vector<int> tempArrBitNSub2 = subBigNum(arrBitN, Bit2);
-    int s = 0;
-    tempArrBit.push_back(1);
-    tempArrBitN = subBigNum(arrBitN, tempArrBit);
-    findSandR(tempArrBitN, s, arrBitR);
-    for (int i = 1; i <= t; i++)
-    {
-        vector<int> arrBitA;
-        vector<int> arrBitY;
-        arrBitA = genArrBit(tempArrBit2, tempArrBitNSub2);
-        iterativeSquaring(arrBitA, arrBitN, arrBitR, arrBitY);
-        if (compareBigNum(arrBitY, tempArrBit) != 0 && compareBigNum(arrBitY, tempArrBitN) != 0)
-        {
-            int j = 1;
-            vector<int> tempArrBit2 = Bit2;
-            while (j <= s - 1 && compareBigNum(arrBitY, tempArrBitN) != 0)
-            {
-                iterativeSquaring(arrBitY, arrBitN, tempArrBit2, arrBitY);
-                if (compareBigNum(arrBitY, tempArrBit) == 0)
-                    return false;
-                j++;
-            }
-            if (compareBigNum(arrBitY, tempArrBitN) != 0)
-                return false;
-        }
-    }
-    return true;
-}
-
-/*
-Ham tim uoc chung lon nhat giua 2 so nguyen lon A va B theo thuat toan Euclid
-Input:	1 vector ( chuoi Binary ) ( arrBit1 ), 1 vector ( chuoi Binary ) ( arrBit2 ).
-Output:	1 vector ( chuoi Binary ).
-*/
-vector<int> euclidean(vector<int> arrBit1, vector<int> arrBit2)
-{
-    if (compareBigNum(arrBit2, Bit0) == 0)
-    {
-        return arrBit1;
-    }
-    else
-    {
-        vector<int> tempArrBit1;
-        vector<int> tempArrBit2;
-        divBigNum(arrBit1, arrBit2, tempArrBit1, tempArrBit2);
-        tempArrBit1.clear();
-        return euclidean(arrBit2, tempArrBit2);
-    }
-}
-
-/*
-Ham Euclid mo rong
-    *	C = ( A ^ -1 ) mod B.
-    *	D = ( B ^ -1 ) mod A.
-Input:	1 vector ( chuoi Binary ) ( arrBitA ), 1 vector ( chuoi Binary ) ( arrBitB ),
-        , 1 vector ( chuoi Binary ) ( arrBitC ), 1 vector ( chuoi Binary ) ( arrBitD ),
-Output:	Ket qua khong tra truc tiep ve ma thong qua 2 bien ( arrBitC ) va ( arrBitD ).
-*/
-void extendedEuclidean(vector<int> arrBitA, vector<int> arrBitB, vector<int> &arrBitC, vector<int> &arrBitD)
-{
-    vector<int> tempArrBit1;
-    vector<int> tempArrBit2;
-    vector<vector<int>> rawDefault0 = {Bit0, Bit0, Bit0, Bit0, Bit1, Bit1};
-    vector<vector<int>> rawMinus1 = {arrBitB, Bit0, Bit0, Bit1, Bit1, Bit1};
-    vector<vector<vector<int>>> table;
-    table.push_back({arrBitA, Bit0, Bit1, Bit0, Bit1, Bit1});
-
-    divBigNum(arrBitB, arrBitA, tempArrBit1, tempArrBit2);
-    table.push_back({tempArrBit2, tempArrBit1, Bit0, Bit0, Bit1, Bit1});
-    if (compareBigNum(rawMinus1[2], mulBigNum(table[1][1], table[0][2])) == -1)
-    {
-        table[1][2] = subBigNum(mulBigNum(table[1][1], table[0][2]), rawMinus1[2]);
-        table[1][4] = Bit0;
-    }
-    else
-    {
-        table[1][2] = subBigNum(rawMinus1[2], mulBigNum(table[1][1], table[0][2]));
-    }
-
-    if (compareBigNum(rawMinus1[3], mulBigNum(table[1][1], table[0][3])) == -1)
-    {
-        table[1][3] = subBigNum(mulBigNum(table[1][1], table[0][3]), rawMinus1[3]);
-        table[1][5] = Bit0;
-    }
-    else
-    {
-        table[1][3] = subBigNum(rawMinus1[3], mulBigNum(table[1][1], table[0][3]));
-    }
-
-    while (compareBigNum(table[table.size() - 1][0], Bit0) != 0)
-    {
-        table.push_back(rawDefault0);
-        divBigNum(table[table.size() - 3][0], table[table.size() - 2][0], tempArrBit1, tempArrBit2);
-        table[table.size() - 1][0] = tempArrBit2;
-        table[table.size() - 1][1] = tempArrBit1;
-    }
-
-    tempArrBit1.clear();
-    tempArrBit2.clear();
-
-    for (int i = 2; i < table.size(); i++)
-    {
-        tempArrBit1 = mulBigNum(table[i][1], table[i - 1][2]);
-        tempArrBit2 = mulBigNum(table[i][1], table[i - 1][3]);
-
-        if (compareBigNum(table[i - 2][4], Bit1) == 0 && compareBigNum(table[i - 1][4], Bit1) == 0)
-        {
-            if (compareBigNum(table[i - 2][2], tempArrBit1) == -1)
-            {
-                table[i][2] = subBigNum(tempArrBit1, table[i - 2][2]);
-                table[i][4] = Bit0;
-            }
-            else
-            {
-                table[i][2] = subBigNum(table[i - 2][2], tempArrBit1);
-            }
-        }
-        else
-        {
-            if (compareBigNum(table[i - 2][4], Bit1) == 0 && compareBigNum(table[i - 1][4], Bit0) == 0)
-            {
-                table[i][2] = addBigNum(table[i - 2][2], tempArrBit1);
-            }
-            else
-            {
-                if (compareBigNum(table[i - 2][4], Bit0) == 0 && compareBigNum(table[i - 1][4], Bit1) == 0)
-                {
-                    table[i][2] = addBigNum(table[i - 2][2], tempArrBit1);
-                    table[i][4] = Bit0;
-                }
-                else
-                {
-                    if (compareBigNum(table[i - 2][2], tempArrBit1) == -1)
-                    {
-                        table[i][2] = subBigNum(tempArrBit1, table[i - 2][2]);
-                    }
-                    else
-                    {
-                        table[i][2] = subBigNum(table[i - 2][2], tempArrBit1);
-                        table[i][4] = Bit0;
-                    }
-                }
-            }
-        }
-
-        if (compareBigNum(table[i - 2][5], Bit1) == 0 && compareBigNum(table[i - 1][5], Bit1) == 0)
-        {
-            if (compareBigNum(table[i - 2][3], tempArrBit2) == -1)
-            {
-                table[i][3] = subBigNum(tempArrBit2, table[i - 2][3]);
-                table[i][5] = Bit0;
-            }
-            else
-            {
-                table[i][3] = subBigNum(table[i - 2][3], tempArrBit2);
-            }
-        }
-        else
-        {
-            if (compareBigNum(table[i - 2][5], Bit1) == 0 && compareBigNum(table[i - 1][5], Bit0) == 0)
-            {
-                table[i][3] = addBigNum(table[i - 2][3], tempArrBit2);
-            }
-            else
-            {
-                if (compareBigNum(table[i - 2][5], Bit0) == 0 && compareBigNum(table[i - 1][5], Bit1) == 0)
-                {
-                    table[i][3] = addBigNum(table[i - 2][3], tempArrBit2);
-                    table[i][5] = Bit0;
-                }
-                else
-                {
-                    if (compareBigNum(table[i - 2][3], tempArrBit2) == -1)
-                    {
-                        table[i][3] = subBigNum(tempArrBit2, table[i - 2][3]);
-                    }
-                    else
-                    {
-                        table[i][3] = subBigNum(table[i - 2][3], tempArrBit2);
-                        table[i][5] = Bit0;
-                    }
-                }
+                results[i] = j;
+                break;
             }
         }
     }
 
-    for (int i = 0; i < table.size(); i++)
-    {
-        if (compareBigNum(table[i][0], Bit1) == 0)
-        {
-            if (compareBigNum(table[i][4], Bit1) == 0)
-            {
-                arrBitC = table[i][2];
-            }
-            else
-            {
-                arrBitC = subBigNum(arrBitB, table[i][2]);
-            }
-
-            if (compareBigNum(table[i][5], Bit1) == 0)
-            {
-                arrBitD = table[i][3];
-            }
-            else
-            {
-                arrBitD = subBigNum(arrBitA, table[i][3]);
-            }
-        }
-    }
-}
-
-int main()
-{
-    string strHex;
-    vector<int> arrBitN;
-    vector<int> arrBitK;
-    vector<int> arrBitX;
-    vector<int> arrBitY;
-
-    string nameFile = "test";
-
-    ifstream in;
-    in.open(nameFile + ".inp");
-    ofstream out;
-    out.open(nameFile + ".out");
-
-    in >> strHex;
-    arrBitN = convertHexToBinary(strHex);
-
-    in >> strHex;
-    arrBitK = convertHexToBinary(strHex);
-
-    in >> strHex;
-    arrBitX = convertHexToBinary(strHex);
-
-    iterativeSquaring(arrBitX, arrBitN, arrBitK, arrBitY);
-
-    strHex = convertBinaryToHex(arrBitY);
-
-    out << strHex;
+    // Ghi kết quả ra file
+    writeOutputFile(outputFile, results);
 
     return 0;
 }
