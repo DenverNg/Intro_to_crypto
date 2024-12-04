@@ -8,26 +8,6 @@
 #include <random>
 using namespace std;
 
-const vector<int> Bit0 = {0};
-const vector<int> Bit1 = {1};
-const vector<int> Bit2 = {0, 1};
-
-/*
-Chuyen chuoi Hex sang chuoi Binary
-Input:	1 string ( chuoi Hex ) ( strHex ).
-Output: 1 vector ( chuoi Binary ).
-*/
-
-void convertBinToDec(vector<int> arr)
-{
-    uint64_t res = 0;
-    for (int i = 0; i < arr.size(); i++)
-    {
-        res = res * 2 + arr[i];
-    }
-    cout << res<< endl;
-}
-
 vector<int> convertHexToBinary(string &strHex)
 {
     vector<int> arrBit = {};
@@ -320,6 +300,7 @@ vector<int> modMultiply(const vector<int> &num1, const vector<int> &num2, const 
 {
     vector<int> product = {0};                        // Kết quả ban đầu bằng 0
     vector<int> moddedBinNum1 = modBinary(num1, mod); // num1 % mod
+                                                      // vector<int> moddedBinNum1 = num1;
     vector<int> currentMultiplier = num2;             // Sao chép num2 để xử lý
 
     // Lặp qua từng bit của num2
@@ -442,38 +423,14 @@ bool millerRabin(const vector<int> &num, int iterations)
         d.pop_back();
         ++s;
     }
-    cout << "n - 1 = 2^s.d with:" << endl;
-    cout << "s = " << s << endl;
-    cout << "d = ";
-    for (int i = 0; i < d.size(); i++)
-    {
-        cout << d[i];
-    }
-    cout << endl;
     // Lặp lại kiểm tra theo số lần `iterations`
-    cout << "==========MILLER-RABIN TEST==========" << endl;
     vector<int> base;
     for (int i = 0; i < iterations; ++i)
     {
         // Sinh cơ số ngẫu nhiên
         vector<int> base = generateRandomBase(num);
-
-        cout << "Iteration " << i + 1 << ": Base = ";
-        for (int bit : base)
-        {
-            cout << bit;
-        }
-        cout << "(2) = "; 
-        convertBinToDec(base);
         // Tính x = base^d mod num
         vector<int> x = modExponentiate(base, d, num);
-        cout << "-> x = base^d mod num = ";
-        for (int bit : x)
-        {
-            cout << bit;
-        }
-        cout << "(2) = ";
-        convertBinToDec(x);
         // Nếu x == 1 hoặc x == num - 1, tiếp tục kiểm tra
         if (compareTwoBinaryNumbers(x, {1}) == 0 || compareTwoBinaryNumbers(x, numMinusOne) == 0)
         {
@@ -484,14 +441,7 @@ bool millerRabin(const vector<int> &num, int iterations)
         bool found = false;
         for (int j = 1; j < s; ++j)
         {
-            cout << "-> Loop " << j << ": x = x^2 mod num = ";
             x = modMultiply(x, x, num);
-            for (int bit : x)
-            {
-                cout << bit;
-            }
-            cout << "(2) = ";
-            convertBinToDec(x);
             if (compareTwoBinaryNumbers(x, subTwoBinaryNumbers(num, {1})) == 0)
             {
                 found = true;
@@ -530,15 +480,7 @@ int main(int argc, char *argv[])
     ofstream out(outputFile);
     string hexString;
     in >> hexString;
-    cout << "Hex: " << hexString << endl;
-
     vector<int> num = convertHexToBinary(hexString);
-    cout << "Binary: ";
-    for (int i = 0; i < num.size(); i++)
-    {
-        cout << num[i];
-    }
-    cout << "\n--------------------------------" << endl;
     int time = 1;
     if (num.size() <= 256)
     {
