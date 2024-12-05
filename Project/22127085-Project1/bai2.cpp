@@ -84,6 +84,7 @@ vector<int> convertHexToBinary(string &strHex)
     }
     return arrBit;
 }
+
 // Hàm in BigInt
 void printBigInt(const BigInt &num)
 {
@@ -91,7 +92,16 @@ void printBigInt(const BigInt &num)
         cout << "-";
     for (int bit : num.bin)
         cout << bit;
-    cout << endl;
+    cout << " = " ;
+    if (num.sign == 1)
+        cout << "-";
+    // num.bin convert binary to decimal
+    int dec = 0;
+    for (int i = 0; i < num.bin.size(); i++)
+    {
+        dec += num.bin[i] * (1 << (num.bin.size() - i - 1));
+    }
+    cout << dec << endl;
 }
 
 // binary to hex
@@ -120,7 +130,7 @@ string binaryToHex(const vector<int> &bin)
 }
 
 // So sánh hai số nhị phân: 1 nếu a > b, -1 nếu a < b, 0 nếu a = b
-int compareTwoBinaryNumbers(const vector<int> &a, const vector<int> &b)
+int compare(const vector<int> &a, const vector<int> &b)
 {
     if (a.size() != b.size())
         return (a.size() > b.size()) ? 1 : -1;
@@ -218,7 +228,7 @@ vector<int> multiplyTwoBinaryNumbers(const vector<int> &base, const vector<int> 
     vector<int> a = base;     // Sao chép số base để xử lý
 
     // Nếu một trong hai số là 0, trả về kết quả 0
-    if (compareTwoBinaryNumbers(base, {0}) ==0 || compareTwoBinaryNumbers(b, {0}) == 0)
+    if (compare(base, {0}) ==0 || compare(b, {0}) == 0)
         return {0};
 
     // Lặp qua từng bit của số b (từ bit thấp nhất đến cao nhất)
@@ -256,7 +266,7 @@ void divideBinaryNumbers(const vector<int> &dividend, const vector<int> &divisor
         }
 
         // Kiểm tra nếu remainder >= divisor
-        if (compareTwoBinaryNumbers(remainder, divisor) >= 0)
+        if (compare(remainder, divisor) >= 0)
         {
             remainder = subTwoBinaryNumbers(remainder, divisor); // remainder -= divisor
             quotient.push_back(1);                               // Thêm 1 vào quotient
@@ -297,7 +307,7 @@ vector<int> modMultiply(const vector<int> &num1, const vector<int> &num2, const 
             product = addTwoBinaryNumbers(product, moddedBinNum1); // product += moddedBinNum1
 
             // Nếu product >= mod, thực hiện modulo
-            if (compareTwoBinaryNumbers(product, mod) >= 0)
+            if (compare(product, mod) >= 0)
             {
                 product = subTwoBinaryNumbers(product, mod);
             }
@@ -307,7 +317,7 @@ vector<int> modMultiply(const vector<int> &num1, const vector<int> &num2, const 
         moddedBinNum1.push_back(0);
 
         // Nếu moddedBinNum1 >= mod, thực hiện modulo
-        if (compareTwoBinaryNumbers(moddedBinNum1, mod) >= 0)
+        if (compare(moddedBinNum1, mod) >= 0)
         {
             moddedBinNum1 = subTwoBinaryNumbers(moddedBinNum1, mod);
         }
@@ -336,6 +346,24 @@ vector<int> modExponentiate(const vector<int> &base, const vector<int> &exp, con
 }
 
 // ==============================BIG INT==============================
+int compare(const BigInt &a, const BigInt &b)
+{
+    if (a.sign > b.sign)
+    {
+        return -1;
+    }
+    else if (a.sign < b.sign)
+    {
+        return 1;
+    }
+
+    if (a.sign)
+    {
+        return compare(b.bin, a.bin);
+    }
+    return compare(a.bin, b.bin);
+}
+
 // Hàm cộng hai BigInt
 BigInt addBigInt(const BigInt &a, const BigInt &b)
 {
@@ -343,7 +371,7 @@ BigInt addBigInt(const BigInt &a, const BigInt &b)
     {
         return {addTwoBinaryNumbers(a.bin, b.bin), a.sign};
     }
-    int cmp = compareTwoBinaryNumbers(a.bin, b.bin);
+    int cmp = compare(a.bin, b.bin);
     if (cmp >= 0)
     {
         return {subTwoBinaryNumbers(a.bin, b.bin), a.sign};
@@ -381,30 +409,30 @@ BigInt modBigInt(const BigInt &num, const BigInt &mod)
     return remainder;
 }
 
-// Hàm nhân modulo BigInt
-BigInt modMultiplyBigInt(const BigInt &a, const BigInt &b, const BigInt &mod)
-{
-    BigInt product = multiplyBigInt(a, b);
-    return modBigInt(product, mod);
-}
+// // Hàm nhân modulo BigInt
+// BigInt modMultiplyBigInt(const BigInt &a, const BigInt &b, const BigInt &mod)
+// {
+//     BigInt product = multiplyBigInt(a, b);
+//     return modBigInt(product, mod);
+// }
 
-// Hàm lũy thừa modulo BigInt
-BigInt modExponentiateBigInt(const BigInt &base, const BigInt &exp, const BigInt &mod)
-{
-    BigInt result = {{1}, false}; // BigInt = 1
-    BigInt modBase = modBigInt(base, mod);
-    vector<int> exponent = exp.bin;
+// // Hàm lũy thừa modulo BigInt
+// BigInt modExponentiateBigInt(const BigInt &base, const BigInt &exp, const BigInt &mod)
+// {
+//     BigInt result = {{1}, false}; // BigInt = 1
+//     BigInt modBase = modBigInt(base, mod);
+//     vector<int> exponent = exp.bin;
 
-    for (size_t i = 0; i < exponent.size(); ++i)
-    {
-        result = modMultiplyBigInt(result, result, mod);
-        if (exponent[i] == 1)
-        {
-            result = modMultiplyBigInt(result, modBase, mod);
-        }
-    }
-    return result;
-}
+//     for (size_t i = 0; i < exponent.size(); ++i)
+//     {
+//         result = modMultiplyBigInt(result, result, mod);
+//         if (exponent[i] == 1)
+//         {
+//             result = modMultiplyBigInt(result, modBase, mod);
+//         }
+//     }
+//     return result;
+// }
 
 // ===========================PAIR BIG INT==============================
 pairBigInt addPairBigInt(const pairBigInt &a, const pairBigInt &b)
@@ -433,22 +461,17 @@ pairBigInt extendedEuclide(BigInt a, BigInt b)
 {
     pairBigInt A_coefficient = {{{1},0}, {{0},0}};
     pairBigInt B_coefficient = {{{0},0}, {{1},0}};
-    int count = 0;
-    while (compareTwoBinaryNumbers(b.bin, {0}))
+    while (compare(b.bin, {0}))
     {
+        
         pairBigInt d = getQuotientAndRemainder(a.bin, b.bin);
         BigInt &q = d.first;
         BigInt &r = d.second;
-        cout << count << endl;
-        printBigInt(q);
-        printBigInt(r);
-        cout << "------------" << endl;
         a = b;
         b = r;
         pairBigInt R_coefficient = subtractPairBigInt(A_coefficient, multiplyNum(B_coefficient, q.bin));
         A_coefficient = B_coefficient;
         B_coefficient = R_coefficient;
-        count++;
     }
     return A_coefficient;
 }
@@ -511,43 +534,20 @@ int main(int argc, char *argv[])
     phi.bin = multiplyTwoBinaryNumbers(subTwoBinaryNumbers(pBin.bin, {1}), subTwoBinaryNumbers(qBin.bin, {1}));
     phi.sign = 0;
 
-    pairBigInt oldGCD = extendedEuclide(eBin, phi);
-    BigInt gcd = addBigInt(multiplyBigInt(oldGCD.first, eBin), multiplyBigInt(oldGCD.second, phi));
-    if (compareTwoBinaryNumbers(gcd.bin, {1}) == 0)
+    pairBigInt oldGCD = extendedEuclide(phi, eBin);
+
+    BigInt gcd = addBigInt(multiplyBigInt(oldGCD.first, phi), multiplyBigInt(oldGCD.second, eBin));
+    if (compare(gcd, {{1},0}) == 0)
     {
         BigInt d = getMinimumPositiveD(phi, oldGCD);
-        printBigInt(d);
         out << binaryToHex(d.bin) << endl;
     }
     else
     {
         cout << -1 <<endl;
     }
-    // // Tạo hai số BigInt
-    // BigInt num1 = {bin1, 0}; // Số dương 245
-    // BigInt num2 = {bin2, 1}; // Số am -164
-
-    // // Thực hiện phép toán
-    // BigInt sum = addBigInt(num1, num2);
-    // BigInt diff = subtractBigInt(num1, num2);
-    // BigInt product = modBigInt(num1, num2);
-
-    // // Ghi kết quả vào file
-    // out << "Sum: ";
-    // for (int bit : sum.bin)
-    //     out << bit;
-    // out << endl;
-
-    // out << "Difference: ";
-    // for (int bit : diff.bin)
-    //     out << bit;
-    // out << endl;
-    // cout << "Product: ";
-    // printBigInt(product);
-
+    cout << "Result is written to " << outputFile << endl;
     in.close();
     out.close();
-
-    cout << "Results written to " << outputFile << endl;
     return 0;
 }

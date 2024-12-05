@@ -516,6 +516,7 @@ int main(int argc, char *argv[])
 
     // Ghi kết quả ra file
     writeOutputFile(outputFile, results);
+    cout << "Result is written to " << outputFile << endl;
 
     return 0;
 }

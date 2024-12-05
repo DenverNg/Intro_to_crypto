@@ -505,6 +505,7 @@ int main(int argc, char *argv[])
         out << 0;
         cout << "Composite" << endl;
     }
+    cout << "Result is written to " << outputFile << endl;
     in.close();
     out.close();
     return 0;
