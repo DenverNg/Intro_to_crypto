@@ -73,7 +73,7 @@ $\rightarrow$ 1035038554EA5865DE4492C83B914A80848A1BC6ED627F2E0909729983E5312C81
 1EE7B9129<br>
 93B8F5C1<br>
 26401<br>
-$\rightarrow$B8D34064A7E5A401
+$\rightarrow$ B8D34064A7E5A401
 ## Bài 3 (không biết check sao số to quá)
 
 1. (|n| = 1028 bit)
