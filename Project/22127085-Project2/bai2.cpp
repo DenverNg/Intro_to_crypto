@@ -399,16 +399,36 @@ BigInt multiplyBigInt(const BigInt &a, const BigInt &b)
     return result;
 }
 
+BigInt mulmodeBigInt(const BigInt &a, const BigInt &b, const BigInt &mod)
+{
+    BigInt result;
+    result.sign = a.sign ^ b.sign;
+    result.bin = modMultiply(a.bin, b.bin, mod.bin);
+    if (result.sign == 1)
+    {
+        BigInt temp = addBigInt(mod, result);
+        result = temp;
+    }
+    return result;
+}
+
 // Hàm chia lấy dư BigInt
 BigInt modBigInt(const BigInt &num, const BigInt &mod)
 {
-    BigInt remainder;
-    vector<int> remBin = modBinary(num.bin, mod.bin);
-    remainder.bin = remBin;
-    remainder.sign = false;
-    return remainder;
-}
+    BigInt result;
+    result.sign = num.sign;
+    vector<int> remainder;
+    vector<int> quotient;
+    divideBinaryNumbers(num.bin, mod.bin, quotient, remainder);
+    result.bin = remainder;
 
+    if (result.sign == 1)
+    {
+        BigInt temp = addBigInt(mod, result);
+        result = temp;
+    }
+    return result;
+}
 // ===========================PAIR BIG INT==============================
 pairBigInt addPairBigInt(const pairBigInt &a, const pairBigInt &b)
 {
@@ -451,44 +471,38 @@ pairBigInt extendedEuclide(BigInt a, BigInt b)
     return A_coefficient;
 }
 
-BigInt getMinimumPositiveD(const BigInt &phi, const pairBigInt &oldGCD)
+BigInt modularMultiplicativeInverse(const BigInt &a, const BigInt &n)
 {
-    BigInt result = oldGCD.second;
-    if (result.sign)
+    pairBigInt oldGCD = extendedEuclide(a, n);
+    return oldGCD.first;
+}
+
+BigInt calculateDelta(const pairBigInt &P, const pairBigInt &Q, const BigInt &p, const BigInt &a)
+{
+    if (compare(P.first, Q.first) == 0 && compare(P.second, Q.second) == 0)
     {
-        pairBigInt d = getQuotientAndRemainder(result.bin, phi.bin);
-        BigInt temp = {{1}, 0};
-        result = addBigInt(result, multiplyBigInt(phi, addBigInt(d.first, temp)));
+        BigInt numerator = addBigInt(multiplyBigInt({{3}, 0}, multiplyBigInt(P.first, P.first)), a);
+        BigInt denominator = multiplyBigInt({{2}, 0}, P.second);
+        pairBigInt temp = extendedEuclide(denominator, p);
+        BigInt inverseDeno = temp.first;
+        return mulmodeBigInt(numerator, inverseDeno, p);
     }
     else
     {
-        // check if oldGCD.second >= phi
-        pairBigInt d = getQuotientAndRemainder(oldGCD.second.bin, phi.bin);
-        result = d.second;
+        BigInt numerator = subtractBigInt(Q.second, P.second);
+        BigInt denominator = subtractBigInt(Q.first, P.first);
+        pairBigInt temp = extendedEuclide(denominator, p);
+        BigInt inverseDeno = temp.first;
+        return mulmodeBigInt(numerator, inverseDeno, p);
     }
-    return result;
 }
 
-BigInt calculateDelta(const pairBigInt &P, const pairBigInt &Q)
+pairBigInt addElipticCurve(const pairBigInt &P, const pairBigInt &Q, const BigInt &p, const BigInt &a)
 {
-    // phi.bin = multiplyTwoBinaryNumbers(subTwoBinaryNumbers(pBin.bin, {1}), subTwoBinaryNumbers(qBin.bin, {1}));
-    // phi.sign = 0;
-
-    // pairBigInt oldGCD = extendedEuclide(phi, eBin);
-
-    // BigInt gcd = addBigInt(multiplyBigInt(oldGCD.first, phi), multiplyBigInt(oldGCD.second, eBin));
-    // if (compare(gcd, {{1}, 0}) == 0)
-    // {
-    //     BigInt d = getMinimumPositiveD(phi, oldGCD);
-    //     out << binaryToHex(d.bin) << endl;
-    // }
-    // else
-    // {
-    //     cout << -1 << endl;
-    // }
-    BigInt numerator = subtractBigInt(P.second, Q.second);
-    BigInt denominator = subtractBigInt(P.first, Q.first);
-    
+    BigInt delta = calculateDelta(P, Q, p, a);
+    BigInt x = modBigInt(subtractBigInt(subtractBigInt(mulmodeBigInt(delta, delta, p), P.first), Q.first), p);
+    BigInt y = modBigInt(subtractBigInt(multiplyBigInt(delta, subtractBigInt(P.first, x)), P.second), p);
+    return {x,y};
 }
 
 // Chương trình chính
@@ -521,15 +535,17 @@ int main(int argc, char *argv[])
     string p, a, b;
     in >> p >> a >> b;
     BigInt pBin = {convertHexToBinary(p), 0};
-    BigInt eBin = {convertHexToBinary(a), 0};
-    BigInt qBin = {convertHexToBinary(b), 0};
+    BigInt aBin = {convertHexToBinary(a), 0};
+    BigInt bBin = {convertHexToBinary(b), 0};
 
     string Px, Py, Qx, Qy;
     in >> Px >> Py >> Qx >> Qy;
     pairBigInt P = {{convertHexToBinary(Px), 0}, {convertHexToBinary(Py), 0}};
     pairBigInt Q = {{convertHexToBinary(Qx), 0}, {convertHexToBinary(Qy), 0}};
-
-    
+    pairBigInt R = addElipticCurve(P, Q, pBin, aBin);
+    string xR = binaryToHex(R.first.bin);
+    string yR = binaryToHex(R.second.bin);
+    out << xR << " " << yR << endl;
     cout << "Result is written to " << outputFile << endl;
     in.close();
     out.close();
