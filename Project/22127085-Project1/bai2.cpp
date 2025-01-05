@@ -544,7 +544,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        cout << -1 <<endl;
+        out << -1 <<endl;
     }
     cout << "Result is written to " << outputFile << endl;
     in.close();

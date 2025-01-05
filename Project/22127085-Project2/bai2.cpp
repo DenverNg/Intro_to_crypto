@@ -96,7 +96,7 @@ void printBigInt(const BigInt &num)
     if (num.sign == 1)
         cout << "-";
     // num.bin convert binary to decimal
-    int dec = 0;
+    long long dec = 0;
     for (int i = 0; i < num.bin.size(); i++)
     {
         dec += num.bin[i] * (1 << (num.bin.size() - i - 1));
@@ -500,6 +500,7 @@ BigInt calculateDelta(const pairBigInt &P, const pairBigInt &Q, const BigInt &p,
 pairBigInt addElipticCurve(const pairBigInt &P, const pairBigInt &Q, const BigInt &p, const BigInt &a)
 {
     BigInt delta = calculateDelta(P, Q, p, a);
+    printBigInt(delta);
     BigInt x = modBigInt(subtractBigInt(subtractBigInt(mulmodeBigInt(delta, delta, p), P.first), Q.first), p);
     BigInt y = modBigInt(subtractBigInt(multiplyBigInt(delta, subtractBigInt(P.first, x)), P.second), p);
     return {x,y};
@@ -538,10 +539,20 @@ int main(int argc, char *argv[])
     BigInt aBin = {convertHexToBinary(a), 0};
     BigInt bBin = {convertHexToBinary(b), 0};
 
+    cout << "p = "; printBigInt(pBin);
+    cout << "a = "; printBigInt(aBin);
+    cout << "b = "; printBigInt(bBin);
+
     string Px, Py, Qx, Qy;
     in >> Px >> Py >> Qx >> Qy;
     pairBigInt P = {{convertHexToBinary(Px), 0}, {convertHexToBinary(Py), 0}};
     pairBigInt Q = {{convertHexToBinary(Qx), 0}, {convertHexToBinary(Qy), 0}};
+
+    cout << "xP = "; printBigInt(P.first);
+    cout << "yP = "; printBigInt(P.second);
+    cout << "xQ = "; printBigInt(Q.first);
+    cout << "yQ = "; printBigInt(Q.second);
+
     pairBigInt R = addElipticCurve(P, Q, pBin, aBin);
     string xR = binaryToHex(R.first.bin);
     string yR = binaryToHex(R.second.bin);
